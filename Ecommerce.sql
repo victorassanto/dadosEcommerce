@@ -1,6 +1,6 @@
---criar tabela cliente
-CREATE TABLE client (
-    idClient INT AUTO_INCREMENT PRIMARY KEY,
+-- criar tabela cliente
+CREATE TABLE cliente (
+    idCliente INT AUTO_INCREMENT PRIMARY KEY,
     Fname VARCHAR(10),
     Minit CHAR(3),
     Lname VARCHAR(20),
@@ -15,18 +15,14 @@ CREATE TABLE client (
     )
 );
 
-
-
-
---criar tabela produto
-create table product(
-    idProduct int auto_increment primary key,
-    Pname varchar(10) not null,
-    classification_kids boolean default false,
-    category enum( 'Eletrônico' 'Vestimenta', 'Brinquedos', 'Alimentos', 'Móveis'),
-    avaliação float default 0,
-    size varchar(10),
-    constraint unique_cpf_client unique (CPF)
+-- criar tabela produto
+CREATE TABLE produto (
+    idProduto INT AUTO_INCREMENT PRIMARY KEY,
+    Pname VARCHAR(10) NOT NULL,
+    classification_kids BOOLEAN DEFAULT FALSE,
+    category ENUM('Eletrônico', 'Vestimenta', 'Brinquedos', 'Alimentos', 'Móveis'),
+    avaliacao FLOAT DEFAULT 0,
+    size VARCHAR(10)
 );
 
 CREATE TABLE payments (
@@ -34,6 +30,7 @@ CREATE TABLE payments (
     idClient INT,
     amount FLOAT,
     paymentDate DATE,
+    FOREIGN KEY (idClient) REFERENCES cliente(idCliente)
 );
 
 CREATE TABLE payment_methods (
@@ -49,7 +46,6 @@ CREATE TABLE payment_methods_mapping (
     FOREIGN KEY (idMethod) REFERENCES payment_methods(idMethod)
 );
 
-
 -- criar tabela pedido
 CREATE TABLE pedido (
     idOrder INT AUTO_INCREMENT PRIMARY KEY,
@@ -58,79 +54,113 @@ CREATE TABLE pedido (
     orderDescription VARCHAR(255),
     sendValue FLOAT DEFAULT 10,
     paymentCash BOOLEAN DEFAULT FALSE,
-    CONSTRAINT fk_order_client FOREIGN KEY (idOrderClient) REFERENCES clients(idClient)
+    FOREIGN KEY (idOrderClient) REFERENCES cliente(idCliente)
 );
 
 CREATE TABLE entrega (
     idEntrega INT AUTO_INCREMENT PRIMARY KEY,
     idOrder INT,
-    [status] VARCHAR(20),
+    status VARCHAR(20),
     codigoRastreio VARCHAR(50),
     entregaDate DATE,
     FOREIGN KEY (idOrder) REFERENCES pedido(idOrder)
 );
 
 -- criar tabela estoque
-create table productStorage(
-    idProdStorage int auto_increment primary key,
-    storageLocation varchar(255),
-    quantity int default 0
+CREATE TABLE estoque (
+    idProdStorage INT AUTO_INCREMENT PRIMARY KEY,
+    storageLocation VARCHAR(255),
+    quantity INT DEFAULT 0
 );
 
 -- criar tabela fornecedor
-create table supplier(
-    idSupplier int auto_increment primary key,
-    SocialName varchar(255) not null,
-    CNPJ char(15) not null,
-    contact char(ll) not null,
-    constraint unique_supplier unique (CNPJ)
+CREATE TABLE fornecedor (
+    idSupplier INT AUTO_INCREMENT PRIMARY KEY,
+    SocialName VARCHAR(255) NOT NULL,
+    CNPJ CHAR(15) NOT NULL,
+    contact CHAR(11) NOT NULL,
+    CONSTRAINT unique_supplier UNIQUE (CNPJ)
 );
 
---criar tabela vendedor
-create table seller(
-    idSeller int auto_increment primary key,
-    SocialName varchar(255) not null,
-    AbstName varchar(255),
-    CNPJ char(15),
-    CPF char(9),
-    location varchar(255),
-    contact char(ll) not null,
-    constraint unique_cnpj_supplier unique (CNPJ),
-    constraint unique_cpf_supplier unique (CPF),
+-- criar tabela vendedor
+CREATE TABLE vendedor (
+    idSeller INT AUTO_INCREMENT PRIMARY KEY,
+    SocialName VARCHAR(255) NOT NULL,
+    AbstName VARCHAR(255),
+    CNPJ CHAR(15),
+    CPF CHAR(9),
+    location VARCHAR(255),
+    contact CHAR(11) NOT NULL,
+    CONSTRAINT unique_cnpj_seller UNIQUE (CNPJ),
+    CONSTRAINT unique_cpf_seller UNIQUE (CPF)
 );
 
-
-create table productSeller(
-    idPseller int,
-    idPproduct int,
-    prodQuantity int default 1,
-    primary key (idPseIIer, idPproduct),
-    constraint fk_product_seller foreign key (idSeller) references selIer(idSeller),
-    constraint fk_product_product foreign key (idPproduct) references product(idProduct)
+CREATE TABLE productSeller (
+    idPseller INT,
+    idPproduct INT,
+    prodQuantity INT DEFAULT 1,
+    PRIMARY KEY (idPseller, idPproduct),
+    FOREIGN KEY (idPseller) REFERENCES vendedor(idSeller),
+    FOREIGN KEY (idPproduct) REFERENCES produto(idProduto)
 );
 
-create table productOrder(
-    idPOproduct int,
-    idPOorder int,
-    poQuantity int default 1,
-    poStatus enum('Disponível', 'Sem estoque') default 'Disponível',
-    primary key (idPOproduct, idPOorder),
-    constraint fk_productorder_seller foreign key (idPOproduct) references product(idProduct),
-    constraint fk_productorder_product foreign key (idPOorder) references orders(idOrder)
+CREATE TABLE productOrder (
+    idPOproduct INT,
+    idPOorder INT,
+    poQuantity INT DEFAULT 1,
+    poStatus ENUM('Disponível', 'Sem estoque') DEFAULT 'Disponível',
+    PRIMARY KEY (idPOproduct, idPOorder),
+    FOREIGN KEY (idPOproduct) REFERENCES produto(idProduto),
+    FOREIGN KEY (idPOorder) REFERENCES pedido(idOrder)
 );
-create table storageLocation(
-    idLproduct int,
-    idLstorage int,
-    [location] varchar(255) not null,
-    primary key (idLproduct, idLstorage),
-    constraint fk_storage_location_product foreign key (idLproduct) references product(idProduct),
-    constraint fk_storage_location_storage foreign key (idLstorage) references orders(productSeIIer)
+
+CREATE TABLE storageLocation (
+    idLproduct INT,
+    idLstorage INT,
+    location VARCHAR(255) NOT NULL,
+    PRIMARY KEY (idLproduct, idLstorage),
+    FOREIGN KEY (idLproduct) REFERENCES produto(idProduto),
+    FOREIGN KEY (idLstorage) REFERENCES productSeller(idPseller)
 );
-create table productsupplier(
-    idPsSuppIier int,
-    idPsProduct int,
-    quantity int not null,
-    primary key (idPsSuppIier, idPsProduct),
-    constraint fk_product_supplier_supplier foreign key (idpsSuppIier) references suppIier(idSuppIier),
-    constraint fk_product_supplier_prodcut foreign key (idPsProduct) references product(idProduct)
+
+CREATE TABLE productsupplier (
+    idPsSupplier INT,
+    idPsProduct INT,
+    quantity INT NOT NULL,
+    PRIMARY KEY (idPsSupplier, idPsProduct),
+    FOREIGN KEY (idPsSupplier) REFERENCES fornecedor(idSupplier),
+    FOREIGN KEY (idPsProduct) REFERENCES produto(idProduto)
 );
+
+--Perguntas e Respostas
+--Quantos pedidos foram feitos por cada cliente?
+SELECT idOrderClient, COUNT(idOrder) AS NumberOfOrders
+FROM pedido
+GROUP BY idOrderClient;
+
+--Algum vendedor também é fornecedor?
+SELECT COUNT(*) AS contador
+FROM vendedor v
+JOIN fornecedor f ON v.CNPJ = f.CNPJ;
+
+--Relação de produtos fornecedores e estoques;
+SELECT 
+    p.idProduto AS ProductID,
+    p.Pname AS ProductName,
+    f.idSupplier AS SupplierID,
+    f.SocialName AS SupplierName,
+    e.idProdStorage AS StockID,
+    e.storageLocation AS StockLocation,
+    e.quantity AS StockQuantity
+FROM produto p
+LEFT JOIN productsupplier ps ON p.idProduto = ps.idPsProduct
+LEFT JOIN fornecedor f ON ps.idPsSupplier = f.idSupplier
+LEFT JOIN estoque e ON p.idProduto = e.idProdStorage;
+
+--Relação de nomes dos fornecedores e nomes dos produtos;
+SELECT
+    f.SocialName AS SupplierName,
+    p.Pname AS ProductName
+FROM fornecedor f
+JOIN productsupplier ps ON f.idSupplier = ps.idPsSupplier
+JOIN produto p ON ps.idPsProduct = p.idProduto;
